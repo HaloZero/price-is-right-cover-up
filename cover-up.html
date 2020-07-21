@@ -1,0 +1,67 @@
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+<style type="text/css">
+	.cell {
+		background-color: #c5a336;
+		width: 50px; 
+		height: 50px;
+		display: inline-block;
+		margin: 15px;
+		color: red;
+	}
+
+	.column {
+		display: inline-block;
+		width: 80px;
+	}
+</style>
+<script type="text/javascript">
+	var globalDigits = 5
+	var globalPrice = 50198
+
+	function generateRandom(numbersToChoose, chosenNumbers) {
+		for (var i = 0; i < numbersToChoose-1; i++) {
+			var newRandomNumber = chosenNumbers[0]
+			do {
+				newRandomNumber = getRandomInt(9)
+			} while (chosenNumbers.includes(newRandomNumber));
+			chosenNumbers.push(newRandomNumber)
+		}
+
+		return chosenNumbers
+	}
+
+	function getRandomInt(max) {
+ 		return Math.ceil(Math.random() * Math.floor(max));
+	}
+
+	function start() {
+		for (var i = 0; i < globalDigits; i++) {
+			$("#reveal-row").append($("<span>", {'class': 'cell'}))
+		}
+
+		var numbers = 2;
+		for (var i = 0; i < globalDigits; i++) {
+			$("#game-cells").append($("<div>", {'class': 'column'}))
+			for (var j = 0; j < numbers; j++) {
+				$($("#game-cells .column")[i]).append($("<span>", {'class': 'cell'}))
+			}
+			numbers += 1;
+		}
+	}
+	
+	$(function() {
+		start()
+	});
+</script>
+
+<body>
+	<div id="main-body" style="vertical-align: center; height: 500px; width: 1000px">
+		<div id="game-cells">
+			
+		</div>
+		<div id="reveal-row">
+
+		</div>
+	</div>
+</body>
