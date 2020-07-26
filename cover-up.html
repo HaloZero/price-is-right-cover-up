@@ -1,6 +1,10 @@
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
 <style type="text/css">
+	body {
+		background-color: #4d80BE;
+	}
+
 	#main-body {
   		display: grid;
 		align-items: center;
@@ -18,6 +22,7 @@
 		line-height: 50px;	
 		font-size: 35px;
 		cursor: pointer;
+		border: solid 1px #c5a336;
 	}
 
 	.cell.selected, .cell.removed {
@@ -28,15 +33,6 @@
 	.column {
 		display: inline-block;
 		width: 80px;
-	}
-
-	#controls {
-		width: 100%;
-	}
-
-	#controls button {
-		display: block;
-		margin: 0 auto;
 	}
 
 	.line {
@@ -51,8 +47,31 @@
 
 	#reveal-row .cell.final {
 		color: white;
-		border: blue 1px solid;
+		border: solid 1px white;
 	}
+
+	#controls {
+		width: 100%;
+		text-align: center;
+	}
+
+	#controls button {
+		display: inline-block;
+		padding: 10px;
+		margin: 0 15px;
+	}
+
+	#background-image {
+		transform: rotate(-45deg);
+		background-image: url(cool-text.png);
+		background-repeat: no-repeat;
+		height: 300px;
+		width: 400px;
+		position: absolute;
+		background-position: 0px 55px;
+		z-index: -100;
+	}
+
 </style>
 <script type="text/javascript">
 	var globalDigits = 5
@@ -67,8 +86,7 @@
 			chosenNumbers.push(newRandomNumber)
 		}
 
-		return chosenNumbers
-		// return shuffle(chosenNumbers)
+		return shuffle(chosenNumbers)
 	}
 
 	function shuffle(a) {
@@ -88,13 +106,11 @@
     	return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
 
-	function start() {
-		for (var i = 0; i < globalDigits; i++) {
-			$("#reveal-row").append($("<span>", {'class': 'cell'}))
-		}
-
+	function generateGame() {
+		generateRevealRow()
 		var splitNumber = globalPrice.toString().split("").map(x => parseInt(x))
 		var numbers = 2;
+		$("#game-cells").append($("<div>", {"id": "background-image"}))
 		for (var i = 0; i < globalDigits; i++) {
 			$("#game-cells").append($("<div>", {'class': 'column'}))
 			var generatedNumbers = generateRandom(numbers, [splitNumber[i]])
@@ -109,20 +125,68 @@
 			numbers += 1;
 		}
 	}
+
+	function generateRevealRow() {
+		for (var i = 0; i < globalDigits; i++) {
+			$("#reveal-row").append($("<span>", {'class': 'cell'}))
+		}
+	}
 	
 	$(function() {
-		start()
+		generateGame()
 		startListening()
+		setupButtons()
 	});
 
 	function newGame() {
-
+		$("#reveal-row").empty()
+		$("#game-cells").empty()
+		generateGame()
+		startListening()
 	}
 
 	function setupNewMove() {
 		$("#game-cells .selected").addClass("removed").removeClass("selected")
 	}
 
+	function setupButtons() {
+		$("#guess-button").click(function() {
+			if ($("#reveal-row .cell.selected").length != globalDigits) {
+				alert("Please choose more numbers")
+				return
+			}
+
+			var foundCorrectNumber = false
+			var splitNumber = globalPrice.toString().split("").map(x => parseInt(x))
+			for (var i = 0; i < globalDigits; i++) {
+				var $cell = $($("#reveal-row .cell")[i])
+				var numberChosen = parseInt($cell.text())
+				console.log("Comparing " + splitNumber + " and number chosen " + numberChosen)
+				if (splitNumber[i] == numberChosen) {
+					console.log("row at " + i + " is correct!")
+					if (!$cell.hasClass("final")) {
+						$cell.addClass("final")
+						foundCorrectNumber = true
+					}
+				} else {
+					$cell.text("")
+					$cell.removeClass("selected")
+				}
+			}
+
+			if ($("#reveal-row .cell.final").length == globalDigits) {
+				alert("YOU WIN")
+			} else if (foundCorrectNumber) {
+				setupNewMove()
+			} else {
+				alert("You lose! Tap reset!")
+			}
+		})
+
+		$("#reset-button").click(function() {
+			newGame()
+		})
+	}
 	function startListening() {
 		$("#game-cells .cell").click(function() {
 			var $this = $(this)
@@ -144,35 +208,6 @@
 			revealCell.text($this.text())
 			revealCell.addClass("selected")
 		})
-
-		$("#guess-button").click(function() {
-			if ($("#reveal-row .cell.selected").length != globalDigits) {
-				alert("Please choose more numbers")
-				return
-			}
-
-			var foundCorrectNumber = false
-			var splitNumber = globalPrice.toString().split("").map(x => parseInt(x))
-			for (var i = 0; i < globalDigits; i++) {
-				var $cell = $($("#reveal-row .cell")[i])
-				var numberChosen = parseInt($cell.text())
-				console.log("Comparing " + splitNumber + " and number chosen " + numberChosen)
-				if (splitNumber[i] == numberChosen) {
-					console.log("row at " + i + " is correct!")
-					$cell.addClass("final")
-					foundCorrectNumber = true
-				} else {
-					$cell.text("")
-					$cell.removeClass("selected")
-				}
-			}
-
-			if (foundCorrectNumber) {
-				setupNewMove()
-			} else {
-				alert("You lose! Tap reset!")
-			}
-		})
 	}
 
 	
@@ -180,11 +215,15 @@
 
 <body>
 	<div id="main-body">
-		<div id="game-cells"></div>
-		<hr>
+		<div id="game-cells">
+		</div>
+		<br>
 		<div class="line"></div>
-		<hr>
+		<br>
 		<div id="reveal-row"></div>
+		<br>
+		<br>
+		<br>
 		<div id="controls">
 			<button id="guess-button">Guess!</button>
 			<button id="reset-button">Reset</button>
