@@ -192,15 +192,14 @@
 			var $this = $(this)
 			var column = $(this).data('column')
 
-			if ($this.parent().find(".selected").length != 0) {
-				console.log("Already selected a number")
-				return 
-			}
-
 			var revealCell = $($("#reveal-row .cell")[column])
 			if (revealCell.hasClass("final")) {
 				console.log("Column has already has a correct number")
 				return
+			}
+
+			if ($this.parent().find(".selected").length != 0) {
+				$this.parent().find(".selected").removeClass('selected')
 			}
 
 			$this.addClass("selected");
